@@ -185,6 +185,63 @@
     }
 }
 
+- (BOOL)canBecomeFirstResponder
+{
+	return YES;
+}
+
+- (void)handleNumberButton:(UIKeyCommand *)command
+{
+	NSInteger key = [command.input integerValue];
+	for (UIButton *button in [lockScreenView buttonArray])
+	{
+		if (button.tag == key)
+		{
+			[UIView animateWithDuration:.2 delay:0.0f options:UIViewAnimationOptionCurveEaseInOut animations:^{
+				[button touchesBegan:[NSSet setWithArray:@[]] withEvent:nil];
+			} completion:^(BOOL finished) {
+				[button touchesEnded:[NSSet setWithArray:@[]] withEvent:nil];
+			}];
+			[self buttonSelected:button];
+			break;
+		}
+	}
+
+}
+
+- (void)handleOkButton:(UIKeyCommand *)command
+{
+	[self okButtonSelected:lockScreenView.okButton];
+}
+
+- (void)handleCancelButton:(UIKeyCommand *)command
+{
+	if (!lockScreenView.cancelButtonDisabled) {
+		[self cancelButtonSelected:lockScreenView.cancelButton];
+	}
+}
+
+- (void)handleDeleteButton:(UIKeyCommand *)command
+{
+	[self deleteFromPin];
+}
+
+- (NSArray<UIKeyCommand *> * __nullable)keyCommands
+{
+	UIKeyCommand *delete = [UIKeyCommand keyCommandWithInput:@"\b" modifierFlags:0 action:@selector(handleDeleteButton:)];
+	UIKeyCommand *cancel = [UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:0 action:@selector(handleCancelButton:)];
+	NSMutableArray *commands = [@[delete, cancel] mutableCopy];
+	if (self.isComplexPin)
+	{
+		[commands addObject:[UIKeyCommand keyCommandWithInput:@"\r" modifierFlags:0 action:@selector(handleOkButton:)]];
+	}
+	for (UIButton *button in [lockScreenView buttonArray])
+	{
+		[commands addObject:[UIKeyCommand keyCommandWithInput:[NSString stringWithFormat:@"%ld", button.tag] modifierFlags:0 action:@selector(handleNumberButton:)]];
+	}
+	return commands;
+}
+
 - (void)cancelButtonDisabled:(BOOL)disabled
 {
     lockScreenView.cancelButtonDisabled = disabled;
@@ -276,6 +333,10 @@
 - (void)okButtonSelected:(UIButton *)sender
 {
 	[self processPin];
+}
+
+- (void)cancelButtonSelected:(UIButton *)sender
+{
 }
 
 @end
