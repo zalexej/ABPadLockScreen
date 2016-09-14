@@ -164,6 +164,8 @@
 
     self.numberLabel.highlighted = highlighted;
     self.lettersLabel.highlighted = highlighted;
+	
+	self.selectedView.alpha = highlighted?1.0f:0.0f;
 }
 
 #pragma mark -
